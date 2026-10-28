@@ -1,6 +1,8 @@
 const appState = {
   currentUser: '',
+  pendingNickname: '',
   connected: false,
+  connecting: false,
   tableState: null,
   privateCards: [],
   messages: []
@@ -203,15 +205,35 @@ function handlePrivateMessage(payload) {
 }
 
 function connectWebSocket() {
+  if (appState.connected || appState.connecting) {
+    return;
+  }
+
+  appState.connecting = true;
   stompClient.connect({}, function () {
+    appState.connecting = false;
     appState.connected = true;
     stompClient.subscribe('/topic/table', handleTableMessage);
     stompClient.subscribe('/topic/chat', handleChatMessage);
     stompClient.subscribe('/user/queue/private', handlePrivateMessage);
+    if (appState.pendingNickname) {
+      sendJoinRequest(appState.pendingNickname);
+    }
   }, function () {
+    appState.connecting = false;
     appState.connected = false;
     alert('WebSocket connection failed. Refresh and try again.');
   });
+}
+
+function sendJoinRequest(nickname) {
+  if (!appState.connected) {
+    appState.pendingNickname = nickname;
+    return;
+  }
+
+  appState.pendingNickname = '';
+  stompClient.send('/app/table.join', {}, JSON.stringify({ nickname }));
 }
 
 joinForm.addEventListener('submit', function (event) {
@@ -223,11 +245,12 @@ joinForm.addEventListener('submit', function (event) {
   }
 
   appState.currentUser = nickname;
-  if (!appState.connected) {
+  if (appState.connected) {
+    sendJoinRequest(nickname);
+  } else {
+    appState.pendingNickname = nickname;
     connectWebSocket();
   }
-
-  stompClient.send('/app/table.join', {}, JSON.stringify({ nickname }));
   nicknameInput.value = '';
 });
 

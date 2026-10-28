@@ -1,6 +1,7 @@
 package com.poker.web;
 
 import com.poker.dto.ChatMessageDto;
+import com.poker.dto.JoinRequestDto;
 import com.poker.dto.PlayerDto;
 import com.poker.dto.TableStateDto;
 import com.poker.model.Player;
@@ -25,7 +26,14 @@ public class WebSocketController {
     }
 
     @MessageMapping("/table.join")
-    public void joinTable(@Payload String nickname) {
+    public void joinTable(@Payload JoinRequestDto request) {
+        if (request == null || request.getNickname() == null || request.getNickname().isBlank()) {
+            throw new IllegalArgumentException("Enter a nickname first");
+        }
+        String nickname = request.getNickname().trim();
+        if (nickname.length() > 20) {
+            throw new IllegalArgumentException("Nickname must be 20 characters or fewer");
+        }
         String sessionId = tableService.createSessionId();
         Player player = tableService.joinTable(nickname, sessionId);
         messagingTemplate.convertAndSend("/topic/table", buildTableState());
