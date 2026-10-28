@@ -124,6 +124,46 @@ class GameServiceTest {
     }
 
     @Test
+    void matchEndsWhenOnlyOneSeatedPlayerHasChips() {
+        gameService.startNewHand("alice-session");
+        Player actor = playerAt(gameService.getCurrentActorSeat());
+        gameService.processAction(actor.getSessionId(), ActionType.FOLD, BigDecimal.ZERO);
+
+        alice.setStack(BigDecimal.ZERO);
+        bob.setStack(new BigDecimal("2000"));
+
+        assertTrue(gameService.isMatchOver());
+        assertEquals("Bob", gameService.getMatchWinnerNickname());
+    }
+
+    @Test
+    void restartingMatchRestoresStacksAndClearsHandState() {
+        gameService.startNewHand("alice-session");
+        Player actor = playerAt(gameService.getCurrentActorSeat());
+        gameService.processAction(actor.getSessionId(), ActionType.FOLD, BigDecimal.ZERO);
+        alice.setStack(BigDecimal.ZERO);
+        bob.setStack(new BigDecimal("2000"));
+
+        gameService.restartMatch("alice-session");
+
+        assertEquals(Table.DEFAULT_STACK, alice.getStack());
+        assertEquals(Table.DEFAULT_STACK, bob.getStack());
+        assertEquals(BigDecimal.ZERO, tableService.getPot());
+        assertTrue(tableService.getTableState().getBoard().isEmpty());
+        assertEquals(Street.PREFLOP, tableService.getTableState().getCurrentStreet());
+        assertFalse(gameService.isHandInProgress());
+        assertFalse(gameService.isMatchOver());
+    }
+
+    @Test
+    void cannotRestartMatchDuringAnActiveHand() {
+        gameService.startNewHand("alice-session");
+
+        assertThrows(IllegalStateException.class, () -> gameService.restartMatch("alice-session"));
+        assertTrue(gameService.isHandInProgress());
+    }
+
+    @Test
     void raiseRequiresCallAndAdvancesWhenMatched() {
         gameService.startNewHand("alice-session");
         Player smallBlind = playerAt(gameService.getCurrentActorSeat());

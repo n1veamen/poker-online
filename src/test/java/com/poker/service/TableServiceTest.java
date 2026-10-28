@@ -57,4 +57,17 @@ class TableServiceTest {
         assertEquals("session-2", resumedPlayer.getSessionId());
         assertFalse(tableService.leaveTable("session-1"));
     }
+
+    @Test
+    void eliminatedPlayerCanReconnectWithoutReceivingARebuy() {
+        Player player = tableService.joinTable("Player", "session-1", "browser-1");
+        player.setStack(java.math.BigDecimal.ZERO);
+        tableService.leaveTable("session-1");
+
+        Player resumedPlayer = tableService.joinTable("Player", "session-2", "browser-1");
+
+        assertSame(player, resumedPlayer);
+        assertEquals(java.math.BigDecimal.ZERO, resumedPlayer.getStack());
+        assertEquals(1, tableService.getTableState().getSeatCount());
+    }
 }

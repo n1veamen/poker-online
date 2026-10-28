@@ -68,6 +68,12 @@ public class WebSocketController {
         broadcastTableState();
     }
 
+    @MessageMapping("/table.restartMatch")
+    public void restartMatch(@Header(SimpMessageHeaderAccessor.SESSION_ID_HEADER) String sessionId) {
+        gameService.restartMatch(sessionId);
+        broadcastTableState();
+    }
+
     @MessageMapping("/table.privateCards")
     @SendToUser(value = "/queue/private", broadcast = false)
     public Map<String, Object> privateCards(
@@ -156,6 +162,8 @@ public class WebSocketController {
         state.setStatusMessage(gameService.getStatusMessage());
         state.setTurnSecondsRemaining(gameService.getTurnSecondsRemaining());
         state.setHandNumber(gameService.getHandNumber());
+        state.setMatchOver(gameService.isMatchOver());
+        state.setMatchWinner(gameService.getMatchWinnerNickname());
         return state;
     }
 

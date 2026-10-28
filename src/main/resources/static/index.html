@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Poker Night</title>
+    <meta name="theme-color" content="#090d18" />
+    <title>Poker Night — Техасский холдем</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
@@ -13,11 +14,13 @@
           <div class="brand-mark">♠</div>
           <div>
             <div class="brand-title">Poker Night</div>
-            <div class="brand-subtitle">Texas Hold'em • Live table</div>
+            <div class="brand-subtitle" data-i18n="subtitle">Техасский холдем · приватный стол</div>
           </div>
         </div>
         <div class="top-actions">
-          <button id="startHandBtn" class="ghost-button" disabled>Start next hand</button>
+          <button id="languageBtn" class="language-button" type="button" aria-label="Switch language">EN</button>
+          <button id="startHandBtn" class="primary-button" disabled data-i18n="startHand">Начать раздачу</button>
+          <button id="restartMatchBtn" class="danger-button" type="button" disabled data-i18n="restartMatch">Сбросить матч</button>
         </div>
       </header>
 
@@ -37,58 +40,71 @@
                 <div id="seat-7" class="seat seat-7"></div>
 
                 <div class="community-box">
+                  <div class="table-eyebrow" data-i18n="tableLabel">ДРУЗЬЯ ЗА СТОЛОМ</div>
                   <div class="board-header">
-                    <span id="streetLabel">Preflop</span>
-                    <span id="potValue">Pot: $0</span>
+                    <span id="streetLabel">Префлоп</span>
+                    <span id="potValue">Банк · 0</span>
                   </div>
                   <div id="boardCards" class="board-cards"></div>
-                  <div id="gameStatus" class="game-status">Join with at least one other player to start.</div>
+                  <div id="gameStatus" class="game-status" aria-live="polite">Подключитесь к столу, чтобы начать игру.</div>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="player-cards-panel">
-            <div class="panel-title">Your cards</div>
+            <div class="panel-heading">
+              <div>
+                <div class="panel-kicker" data-i18n="privateCardsLabel">ВАША РУКА</div>
+                <div class="panel-title" data-i18n="yourCards">Ваши карты</div>
+              </div>
+              <div class="cards-hint" data-i18n="cardsHint">Карты видны только вам</div>
+            </div>
             <div id="privateCards" class="private-cards"></div>
           </div>
         </section>
 
         <aside class="side-panel">
           <div class="panel-box login-box">
-            <div class="panel-title">Join table</div>
+            <div class="panel-kicker" data-i18n="seatLabel">ВАШЕ МЕСТО</div>
+            <div class="panel-title" data-i18n="joinTable">Сесть за стол</div>
             <form id="joinForm">
-              <input id="nicknameInput" type="text" maxlength="20" placeholder="Enter nickname" />
-              <button type="submit">Sit down</button>
+              <input id="nicknameInput" type="text" maxlength="20" placeholder="Ваш никнейм" data-i18n-placeholder="nicknamePlaceholder" autocomplete="nickname" />
+              <button class="primary-button" type="submit" data-i18n="sitDown">Занять место</button>
             </form>
+            <div class="helper-text" data-i18n="seatHint">До 8 игроков · один профиль браузера — одно место</div>
           </div>
 
           <div class="panel-box actions-box">
-            <div class="panel-title">Actions</div>
+            <div class="panel-kicker" data-i18n="yourMove">ВАШ ХОД</div>
+            <div class="panel-title" data-i18n="actions">Действия</div>
             <div class="action-grid">
-              <button data-action="CHECK">Check</button>
-              <button data-action="CALL">Call</button>
-              <button data-action="BET">Bet</button>
-              <button data-action="RAISE">Raise</button>
-              <button data-action="FOLD">Fold</button>
-              <button data-action="ALL_IN">All-in</button>
+              <button data-action="CHECK" data-i18n="check" disabled>Чек</button>
+              <button data-action="CALL" data-i18n="call" disabled>Колл</button>
+              <button data-action="BET" data-i18n="bet" disabled>Ставка</button>
+              <button data-action="RAISE" data-i18n="raise" disabled>Рейз</button>
+              <button data-action="FOLD" class="subtle-danger" data-i18n="fold" disabled>Фолд</button>
+              <button data-action="ALL_IN" class="all-in-button" data-i18n="allIn" disabled>Олл-ин</button>
             </div>
             <div class="amount-row">
-              <label for="amountInput">Total bet this street</label>
-              <input id="amountInput" type="number" min="20" step="10" value="20" />
+              <label for="amountInput" data-i18n="betAmount">Размер ставки</label>
+              <input id="amountInput" type="number" min="20" step="10" value="20" inputmode="numeric" />
             </div>
+            <div class="helper-text" data-i18n="betHint">Укажите итоговую ставку на этой улице.</div>
           </div>
 
           <div class="panel-box chat-box">
-            <div class="panel-title">Table chat</div>
+            <div class="panel-kicker" data-i18n="tableTalk">ЗА СТОЛОМ</div>
+            <div class="panel-title" data-i18n="chat">Чат</div>
             <div id="chatMessages" class="chat-messages"></div>
             <form id="chatForm" class="chat-form">
-              <input id="chatInput" type="text" maxlength="140" placeholder="Say something..." />
-              <button type="submit">Send</button>
+              <input id="chatInput" type="text" maxlength="140" placeholder="Написать сообщение…" data-i18n-placeholder="chatPlaceholder" />
+              <button type="submit" data-i18n="send">Отправить</button>
             </form>
           </div>
         </aside>
       </main>
+      <footer class="footer-note" data-i18n="footerNote">Играйте дружески. Фишки виртуальные.</footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

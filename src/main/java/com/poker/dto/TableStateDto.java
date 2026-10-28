@@ -20,6 +20,8 @@ public class TableStateDto {
     private String statusMessage;
     private long turnSecondsRemaining;
     private long handNumber;
+    private boolean matchOver;
+    private String matchWinner;
 
     public TableStateDto() {
     }
@@ -84,4 +86,10 @@ public class TableStateDto {
 
     public long getHandNumber() { return handNumber; }
     public void setHandNumber(long handNumber) { this.handNumber = handNumber; }
+
+    public boolean isMatchOver() { return matchOver; }
+    public void setMatchOver(boolean matchOver) { this.matchOver = matchOver; }
+
+    public String getMatchWinner() { return matchWinner; }
+    public void setMatchWinner(String matchWinner) { this.matchWinner = matchWinner; }
 }

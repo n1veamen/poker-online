@@ -117,6 +117,42 @@ public class GameService {
         log.info("Hand {} started with {} players", handNumber, handPlayers.size());
     }
 
+    public synchronized void restartMatch(String sessionId) {
+        Table table = tableService.getTableState();
+        if (tableService.getPlayerBySession(sessionId) == null) {
+            throw new IllegalStateException("Join the table before restarting the match.");
+        }
+        if (handInProgress) {
+            throw new IllegalStateException("Finish the current hand before restarting the match.");
+        }
+
+        handPlayers.clear();
+        actedThisRound.clear();
+        deck = null;
+        currentActorSeat = -1;
+        currentBet = 0;
+        minimumRaise = BIG_BLIND.intValueExact();
+        turnDeadline = null;
+        tableService.restoreStartingStacks();
+        table.setDealerIndex(Table.MAX_SEATS - 1);
+        table.setSmallBlindIndex(0);
+        table.setBigBlindIndex(0);
+        table.clearBoard();
+        table.clearPot();
+        table.setCurrentStreet(Street.PREFLOP);
+        table.getPlayers().forEach(player -> {
+            player.setStack(Table.DEFAULT_STACK);
+            player.setBet(BigDecimal.ZERO);
+            player.setHandContribution(BigDecimal.ZERO);
+            player.setFolded(false);
+            player.setAllIn(false);
+            player.setDealer(false);
+            player.setHoleCards(List.of());
+        });
+        statusMessage = "The match has been restarted. Waiting for players.";
+        log.info("Match restarted by {}", tableService.getPlayerBySession(sessionId).getNickname());
+    }
+
     public synchronized void processAction(String sessionId, ActionType actionType, BigDecimal amount) {
         if (!handInProgress) {
             throw new IllegalStateException("There is no hand in progress.");
@@ -281,6 +317,20 @@ public class GameService {
 
     public synchronized String getStatusMessage() {
         return statusMessage;
+    }
+
+    public synchronized boolean isMatchOver() {
+        return handNumber > 0 && !handInProgress && getMatchWinnerNickname() != null;
+    }
+
+    public synchronized String getMatchWinnerNickname() {
+        if (handNumber == 0 || handInProgress) {
+            return null;
+        }
+        List<Player> playersWithChips = tableService.getTableState().getPlayers().stream()
+                .filter(player -> player.getStack().signum() > 0)
+                .toList();
+        return playersWithChips.size() == 1 ? playersWithChips.getFirst().getNickname() : null;
     }
 
     public synchronized long getTurnSecondsRemaining() {
@@ -459,7 +509,6 @@ public class GameService {
         List<Card> boardSnapshot = new ArrayList<>(table.getBoard());
         String winnerNames = winners.stream().map(Player::getNickname).distinct()
                 .reduce((left, right) -> left + ", " + right).orElse("No winner");
-        statusMessage = winnerNames + message;
         handInProgress = false;
         currentActorSeat = -1;
         turnDeadline = null;
@@ -472,6 +521,10 @@ public class GameService {
         table.getPlayers().forEach(Player::clearBet);
         handPlayers.forEach(player -> player.setHandContribution(BigDecimal.ZERO));
         table.clearPot();
+        String champion = getMatchWinnerNickname();
+        statusMessage = winnerNames + message + (champion == null
+                ? ""
+                : " Match complete! " + champion + " is the champion. Restart the match to play again.");
         log.info("Hand {} ended. Winners: {}", handNumber, winnerNames);
     }
 
