@@ -63,6 +63,15 @@ public class Table {
         }
     }
 
+    public void removePlayer(Player player) {
+        for (int i = 0; i < seats.size(); i++) {
+            if (seats.get(i) == player) {
+                seats.set(i, null);
+                return;
+            }
+        }
+    }
+
     public int getSeatCount() {
         return (int) seats.stream().filter(Objects::nonNull).count();
     }

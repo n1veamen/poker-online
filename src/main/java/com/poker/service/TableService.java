@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -18,11 +17,12 @@ public class TableService {
     private final Table table = new Table();
 
     public synchronized Player joinTable(String nickname, String sessionId) {
+        Player existingPlayer = playersBySession.get(sessionId);
+        if (existingPlayer != null) {
+            return existingPlayer;
+        }
         if (table.isFull()) {
             throw new IllegalStateException("Table is full");
-        }
-        if (playersBySession.containsKey(sessionId)) {
-            return playersBySession.get(sessionId);
         }
         Player player = new Player(nickname, Table.DEFAULT_STACK, sessionId, table.getSeatCount());
         table.sitPlayer(player);
@@ -31,11 +31,14 @@ public class TableService {
         return player;
     }
 
-    public synchronized void leaveTable(String sessionId) {
+    public synchronized boolean leaveTable(String sessionId) {
         Player player = playersBySession.remove(sessionId);
         if (player != null) {
-            table.removePlayer(player.getNickname());
+            table.removePlayer(player);
+            log.info("Player {} left table", player.getNickname());
+            return true;
         }
+        return false;
     }
 
     public synchronized Table getTableState() {
@@ -44,10 +47,6 @@ public class TableService {
 
     public synchronized Map<String, Player> getPlayersBySession() {
         return playersBySession;
-    }
-
-    public synchronized String createSessionId() {
-        return UUID.randomUUID().toString();
     }
 
     public synchronized BigDecimal getPot() {

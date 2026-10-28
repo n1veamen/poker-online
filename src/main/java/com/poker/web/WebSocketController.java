@@ -4,13 +4,18 @@ import com.poker.dto.ChatMessageDto;
 import com.poker.dto.JoinRequestDto;
 import com.poker.dto.PlayerDto;
 import com.poker.dto.TableStateDto;
-import com.poker.model.Player;
 import com.poker.model.Table;
 import com.poker.service.TableService;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +31,9 @@ public class WebSocketController {
     }
 
     @MessageMapping("/table.join")
-    public void joinTable(@Payload JoinRequestDto request) {
+    public void joinTable(
+            @Payload JoinRequestDto request,
+            @Header(SimpMessageHeaderAccessor.SESSION_ID_HEADER) String sessionId) {
         if (request == null || request.getNickname() == null || request.getNickname().isBlank()) {
             throw new IllegalArgumentException("Enter a nickname first");
         }
@@ -34,10 +41,21 @@ public class WebSocketController {
         if (nickname.length() > 20) {
             throw new IllegalArgumentException("Nickname must be 20 characters or fewer");
         }
-        String sessionId = tableService.createSessionId();
-        Player player = tableService.joinTable(nickname, sessionId);
+        tableService.joinTable(nickname, sessionId);
         messagingTemplate.convertAndSend("/topic/table", buildTableState());
-        messagingTemplate.convertAndSendToUser(sessionId, "/queue/private", Map.of("type", "player_joined", "player", player.getNickname()));
+    }
+
+    @MessageExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @SendToUser(value = "/queue/private", broadcast = false)
+    public Map<String, String> handleJoinError(RuntimeException exception) {
+        return Map.of("type", "error", "message", exception.getMessage());
+    }
+
+    @EventListener
+    public void handleDisconnect(SessionDisconnectEvent event) {
+        if (tableService.leaveTable(event.getSessionId())) {
+            messagingTemplate.convertAndSend("/topic/table", buildTableState());
+        }
     }
 
     @MessageMapping("/chat")
