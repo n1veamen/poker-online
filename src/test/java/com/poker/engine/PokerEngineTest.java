@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PokerEngineTest {
 
@@ -42,6 +41,20 @@ class PokerEngineTest {
 
         List<BigDecimal> pots = SidePotCalculator.calculateSidePots(List.of(p1, p2, p3), new BigDecimal("700"));
         assertEquals(3, pots.size());
-        assertTrue(pots.stream().allMatch(value -> value.compareTo(BigDecimal.ZERO) > 0));
+        assertEquals(List.of(new BigDecimal("300"), new BigDecimal("200"), new BigDecimal("200")), pots);
+    }
+
+    @Test
+    void shouldUseTotalHandContributionsForSidePotsAcrossStreets() {
+        Player p1 = new Player("A", new BigDecimal("1000"), "s1", 0);
+        Player p2 = new Player("B", new BigDecimal("1000"), "s2", 1);
+        Player p3 = new Player("C", new BigDecimal("1000"), "s3", 2);
+        p1.setHandContribution(new BigDecimal("100"));
+        p2.setHandContribution(new BigDecimal("200"));
+        p3.setHandContribution(new BigDecimal("400"));
+
+        assertEquals(
+                List.of(new BigDecimal("300"), new BigDecimal("200"), new BigDecimal("200")),
+                SidePotCalculator.calculateSidePots(List.of(p1, p2, p3), new BigDecimal("700")));
     }
 }

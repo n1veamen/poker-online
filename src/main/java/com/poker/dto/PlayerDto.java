@@ -13,6 +13,7 @@ public class PlayerDto {
     private boolean active;
     private int seatIndex;
     private List<String> holeCards;
+    private boolean inHand;
 
     public PlayerDto() {
     }
@@ -56,4 +57,7 @@ public class PlayerDto {
 
     public List<String> getHoleCards() { return holeCards; }
     public void setHoleCards(List<String> holeCards) { this.holeCards = holeCards; }
+
+    public boolean isInHand() { return inHand; }
+    public void setInHand(boolean inHand) { this.inHand = inHand; }
 }

@@ -13,6 +13,13 @@ public class TableStateDto {
     private String currentStreet;
     private List<PlayerDto> players;
     private List<String> board;
+    private int currentActorSeat = -1;
+    private BigDecimal currentBet = BigDecimal.ZERO;
+    private BigDecimal minRaise = BigDecimal.ZERO;
+    private boolean handInProgress;
+    private String statusMessage;
+    private long turnSecondsRemaining;
+    private long handNumber;
 
     public TableStateDto() {
     }
@@ -56,4 +63,25 @@ public class TableStateDto {
 
     public List<String> getBoard() { return board; }
     public void setBoard(List<String> board) { this.board = board; }
+
+    public int getCurrentActorSeat() { return currentActorSeat; }
+    public void setCurrentActorSeat(int currentActorSeat) { this.currentActorSeat = currentActorSeat; }
+
+    public BigDecimal getCurrentBet() { return currentBet; }
+    public void setCurrentBet(BigDecimal currentBet) { this.currentBet = currentBet; }
+
+    public BigDecimal getMinRaise() { return minRaise; }
+    public void setMinRaise(BigDecimal minRaise) { this.minRaise = minRaise; }
+
+    public boolean isHandInProgress() { return handInProgress; }
+    public void setHandInProgress(boolean handInProgress) { this.handInProgress = handInProgress; }
+
+    public String getStatusMessage() { return statusMessage; }
+    public void setStatusMessage(String statusMessage) { this.statusMessage = statusMessage; }
+
+    public long getTurnSecondsRemaining() { return turnSecondsRemaining; }
+    public void setTurnSecondsRemaining(long turnSecondsRemaining) { this.turnSecondsRemaining = turnSecondsRemaining; }
+
+    public long getHandNumber() { return handNumber; }
+    public void setHandNumber(long handNumber) { this.handNumber = handNumber; }
 }

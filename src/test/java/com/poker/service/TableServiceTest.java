@@ -45,4 +45,16 @@ class TableServiceTest {
                 () -> tableService.joinTable("Extra", "session-extra"));
         assertEquals(8, tableService.getTableState().getSeatCount());
     }
+
+    @Test
+    void theSameBrowserCannotTakeMultipleSeats() {
+        Player firstPlayer = tableService.joinTable("Player", "session-1", "browser-1");
+
+        Player resumedPlayer = tableService.joinTable("Player", "session-2", "browser-1");
+
+        assertSame(firstPlayer, resumedPlayer);
+        assertEquals(1, tableService.getTableState().getSeatCount());
+        assertEquals("session-2", resumedPlayer.getSessionId());
+        assertFalse(tableService.leaveTable("session-1"));
+    }
 }

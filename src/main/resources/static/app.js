@@ -3,6 +3,10 @@ const appState = {
   pendingNickname: '',
   connected: false,
   connecting: false,
+  joined: false,
+  actionPending: false,
+  requestedPrivateHand: -1,
+  displayedPrivateHand: -1,
   tableState: null,
   privateCards: [],
   messages: []
@@ -21,8 +25,21 @@ const streetLabel = document.getElementById('streetLabel');
 const potValue = document.getElementById('potValue');
 const privateCards = document.getElementById('privateCards');
 const startHandBtn = document.getElementById('startHandBtn');
-const advanceStreetBtn = document.getElementById('advanceStreetBtn');
 const amountInput = document.getElementById('amountInput');
+const gameStatus = document.getElementById('gameStatus');
+const clientId = getClientId();
+
+function getClientId() {
+  const key = 'poker-online-client-id';
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
 
 function cardText(card) {
   if (!card) return '??';
@@ -102,7 +119,7 @@ function renderSeats(tableState) {
   for (let i = 0; i < 8; i++) {
     const seat = document.getElementById(`seat-${i}`);
     seat.innerHTML = '';
-    seat.classList.remove('empty');
+    seat.classList.remove('empty', 'current-turn');
 
     const player = tableState?.players?.find(item => item.seatIndex === i);
     if (!player) {
@@ -117,7 +134,14 @@ function renderSeats(tableState) {
 
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.innerHTML = `<span>$${player.stack}</span><span>${player.folded ? 'Folded' : player.allIn ? 'All-in' : 'Live'}</span>`;
+    const stack = document.createElement('span');
+    stack.textContent = `$${player.stack}`;
+    const state = document.createElement('span');
+    state.textContent = player.folded ? 'Folded' : player.allIn ? 'All-in' : player.bet > 0 ? `Bet $${player.bet}` : 'In hand';
+    meta.append(stack, state);
+    if (i === tableState.currentActorSeat && tableState.handInProgress) {
+      seat.classList.add('current-turn');
+    }
 
     const miniCards = document.createElement('div');
     miniCards.className = 'mini-cards';
@@ -149,10 +173,13 @@ function renderChat(messages) {
   messages.forEach(message => {
     const item = document.createElement('div');
     item.className = 'chat-message';
-    item.innerHTML = `
-      <div class="meta">${message.nickname} • ${message.timestamp || 'now'}</div>
-      <div class="text">${message.message}</div>
-    `;
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = `${message.nickname} • ${message.timestamp || 'now'}`;
+    const text = document.createElement('div');
+    text.className = 'text';
+    text.textContent = message.message;
+    item.append(meta, text);
     chatMessages.appendChild(item);
   });
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -161,26 +188,62 @@ function renderChat(messages) {
 function renderTableState() {
   if (!appState.tableState) return;
   const table = appState.tableState;
+  if (table.handInProgress && appState.displayedPrivateHand !== table.handNumber) {
+    appState.privateCards = [];
+    appState.displayedPrivateHand = table.handNumber;
+    renderPrivateCards(appState.privateCards);
+  }
   streetLabel.textContent = table.currentStreet || 'Preflop';
   potValue.textContent = `Pot: $${table.pot || 0}`;
+  const myPlayer = table.players?.find(player => player.nickname.toLowerCase() === appState.currentUser.toLowerCase());
+  appState.joined = Boolean(myPlayer);
+  joinForm.querySelector('button[type="submit"]').disabled = appState.joined;
+  nicknameInput.disabled = appState.joined;
+  startHandBtn.disabled = !appState.joined || table.handInProgress
+    || (table.players || []).filter(player => Number(player.stack) > 0).length < 2;
+  startHandBtn.textContent = table.handInProgress ? 'Hand in progress' : 'Start next hand';
+  gameStatus.textContent = table.handInProgress
+    ? `${table.statusMessage || ''} ${table.currentActorSeat >= 0 ? `To call: $${Math.max(0, Number(table.currentBet) - Number(myPlayer?.bet || 0))} · ${table.turnSecondsRemaining}s` : ''}`.trim()
+    : table.statusMessage || 'Waiting for players.';
+  const myTurn = Boolean(myPlayer && table.handInProgress && myPlayer.seatIndex === table.currentActorSeat);
+  const callRequired = myTurn && Number(table.currentBet) > Number(myPlayer.bet);
+  document.querySelectorAll('[data-action]').forEach(button => {
+    const action = button.dataset.action;
+    const allowed = myTurn
+    && (action === 'ALL_IN'
+      || (action === 'FOLD' && callRequired)
+        || (action === 'CHECK' && !callRequired)
+        || (action === 'CALL' && callRequired)
+        || (action === 'BET' && Number(table.currentBet) === 0)
+        || (action === 'RAISE' && Number(table.currentBet) > 0));
+    button.disabled = !allowed || appState.actionPending;
+  });
+  if (myTurn) {
+    const minimumTarget = Number(table.currentBet) === 0
+      ? Number(table.minRaise)
+      : Number(table.currentBet) + Number(table.minRaise);
+    amountInput.min = String(minimumTarget);
+    amountInput.max = String(Number(myPlayer.bet) + Number(myPlayer.stack));
+  }
   renderBoard(table.board || []);
   renderSeats(table);
+  if (appState.joined && table.handInProgress && myPlayer.inHand
+      && appState.requestedPrivateHand !== table.handNumber) {
+    appState.requestedPrivateHand = table.handNumber;
+    stompClient.send('/app/table.privateCards', {}, '{}');
+  }
 }
 
 function handleTableMessage(payload) {
   const body = JSON.parse(payload.body);
   if (!body || typeof body !== 'object') return;
 
-  if (body.type === 'your_cards') {
-    appState.privateCards = Array.isArray(body.cards) ? body.cards : [];
-    renderPrivateCards(appState.privateCards);
-    return;
+  const myPlayer = appState.tableState?.players?.find(
+    player => player.nickname.toLowerCase() === appState.currentUser.toLowerCase()
+  );
+  if (!body.handInProgress || !myPlayer || body.currentActorSeat !== myPlayer.seatIndex) {
+    appState.actionPending = false;
   }
-
-  if (body.type === 'action_taken' || body.type === 'hand_started' || body.type === 'street_changed' || body.type === 'player_joined') {
-    return;
-  }
-
   appState.tableState = body;
   renderTableState();
 }
@@ -200,7 +263,9 @@ function handlePrivateMessage(payload) {
   }
 
   if (msg.type === 'error') {
-    alert(msg.message || 'Something went wrong');
+    appState.actionPending = false;
+    renderTableState();
+    window.alert(msg.message || 'Something went wrong');
   }
 }
 
@@ -233,7 +298,8 @@ function sendJoinRequest(nickname) {
   }
 
   appState.pendingNickname = '';
-  stompClient.send('/app/table.join', {}, JSON.stringify({ nickname }));
+  appState.currentUser = nickname;
+  stompClient.send('/app/table.join', {}, JSON.stringify({ nickname, clientId }));
 }
 
 joinForm.addEventListener('submit', function (event) {
@@ -244,7 +310,6 @@ joinForm.addEventListener('submit', function (event) {
     return;
   }
 
-  appState.currentUser = nickname;
   if (appState.connected) {
     sendJoinRequest(nickname);
   } else {
@@ -278,36 +343,28 @@ chatForm.addEventListener('submit', function (event) {
 
 document.querySelectorAll('[data-action]').forEach(button => {
   button.addEventListener('click', function () {
-    if (!appState.currentUser) {
-      alert('Join the table first');
+    if (!appState.joined || !appState.tableState || button.disabled) {
       return;
     }
 
     const action = button.dataset.action;
     const payload = {
-      nickname: appState.currentUser,
       action,
       amount: Number(amountInput.value || 0)
     };
 
+    appState.actionPending = true;
+    document.querySelectorAll('[data-action]').forEach(actionButton => actionButton.disabled = true);
     stompClient.send('/app/action', {}, JSON.stringify(payload));
   });
 });
 
 startHandBtn.addEventListener('click', function () {
   if (!appState.currentUser) {
-    alert('Join the table first');
+    window.alert('Join the table first');
     return;
   }
   stompClient.send('/app/table.startHand', {}, '{}');
-});
-
-advanceStreetBtn.addEventListener('click', function () {
-  if (!appState.currentUser) {
-    alert('Join the table first');
-    return;
-  }
-  stompClient.send('/app/table.advanceStreet', {}, '{}');
 });
 
 renderPrivateCards(appState.privateCards);

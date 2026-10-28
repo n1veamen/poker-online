@@ -17,8 +17,7 @@
           </div>
         </div>
         <div class="top-actions">
-          <button id="startHandBtn" class="ghost-button">Start hand</button>
-          <button id="advanceStreetBtn" class="ghost-button">Next street</button>
+          <button id="startHandBtn" class="ghost-button" disabled>Start next hand</button>
         </div>
       </header>
 
@@ -43,6 +42,7 @@
                     <span id="potValue">Pot: $0</span>
                   </div>
                   <div id="boardCards" class="board-cards"></div>
+                  <div id="gameStatus" class="game-status">Join with at least one other player to start.</div>
                 </div>
               </div>
             </div>
@@ -74,8 +74,8 @@
               <button data-action="ALL_IN">All-in</button>
             </div>
             <div class="amount-row">
-              <label for="amountInput">Amount</label>
-              <input id="amountInput" type="number" min="0" step="10" value="20" />
+              <label for="amountInput">Total bet this street</label>
+              <input id="amountInput" type="number" min="20" step="10" value="20" />
             </div>
           </div>
 

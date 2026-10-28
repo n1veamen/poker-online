@@ -50,6 +50,13 @@ button:hover {
   box-shadow: 0 8px 20px rgba(112, 124, 255, 0.25);
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  transform: none;
+  box-shadow: none;
+}
+
 input {
   width: 100%;
   background: rgba(21, 30, 49, 0.9);
@@ -188,6 +195,11 @@ input {
   letter-spacing: 0.08em;
 }
 
+.seat.current-turn {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(249, 214, 108, 0.35), 0 0 24px rgba(249, 214, 108, 0.24);
+}
+
 .seat .name {
   font-weight: 700;
   font-size: 0.94rem;
@@ -244,6 +256,14 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   backdrop-filter: blur(6px);
+}
+
+.game-status {
+  min-height: 1.4rem;
+  margin-top: 0.8rem;
+  color: var(--gold);
+  text-align: center;
+  font-size: 0.86rem;
 }
 
 .board-header {

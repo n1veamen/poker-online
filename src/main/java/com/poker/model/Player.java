@@ -9,6 +9,7 @@ public class Player {
     private final String nickname;
     private BigDecimal stack;
     private BigDecimal bet;
+    private BigDecimal handContribution = BigDecimal.ZERO;
     private boolean folded;
     private boolean allIn;
     private boolean dealer;
@@ -44,6 +45,14 @@ public class Player {
 
     public void setBet(BigDecimal bet) {
         this.bet = bet;
+    }
+
+    public BigDecimal getHandContribution() {
+        return handContribution;
+    }
+
+    public void setHandContribution(BigDecimal handContribution) {
+        this.handContribution = handContribution;
     }
 
     public boolean isFolded() {

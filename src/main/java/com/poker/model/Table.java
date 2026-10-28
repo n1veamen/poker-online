@@ -10,7 +10,7 @@ public class Table {
     public static final BigDecimal DEFAULT_STACK = new BigDecimal("1000");
 
     private final List<Player> seats = new ArrayList<>(MAX_SEATS);
-    private int dealerIndex;
+    private int dealerIndex = MAX_SEATS - 1;
     private int smallBlindIndex;
     private int bigBlindIndex;
     private BigDecimal pot = BigDecimal.ZERO;
