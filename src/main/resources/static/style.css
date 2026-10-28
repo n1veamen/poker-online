@@ -1,0 +1,433 @@
+:root {
+  --bg: #0a1020;
+  --bg-2: #121a2b;
+  --panel: rgba(18, 26, 43, 0.9);
+  --panel-strong: rgba(23, 34, 58, 0.96);
+  --line: rgba(169, 171, 255, 0.25);
+  --text: #edf1ff;
+  --muted: #a1afd4;
+  --purple: #8a7dff;
+  --blue: #57a6ff;
+  --cyan: #6ef0ff;
+  --green: #7ef0c2;
+  --red: #ff6c85;
+  --gold: #f9d66c;
+  --table: linear-gradient(135deg, #163c2b 0%, #0a5a3d 28%, #0b3c2d 100%);
+  --shadow: 0 18px 40px rgba(28, 13, 48, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(88, 112, 255, 0.3), transparent 30%),
+    linear-gradient(180deg, #07111d 0%, #090d18 100%);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(140, 120, 255, 0.2), rgba(85, 122, 255, 0.16));
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(112, 124, 255, 0.25);
+}
+
+input {
+  width: 100%;
+  background: rgba(21, 30, 49, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 0.75rem 0.85rem;
+}
+
+.app-shell {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 1.2rem 1rem 2rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(9, 17, 31, 0.66);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(138, 125, 255, 0.25), rgba(87, 166, 255, 0.18));
+  border: 1px solid rgba(87, 166, 255, 0.35);
+  color: var(--cyan);
+  font-size: 1.5rem;
+}
+
+.brand-title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.top-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.ghost-button {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 420px);
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.table-panel,
+.side-panel {
+  min-width: 0;
+}
+
+.table-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.table-wrap {
+  background: rgba(14, 22, 36, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.table-surface {
+  position: relative;
+  min-height: 700px;
+  border-radius: 28px;
+  background: var(--table);
+  box-shadow: inset 0 0 0 10px rgba(0, 0, 0, 0.12), inset 0 0 25px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.table-lights {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 42%);
+}
+
+.table-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+}
+
+.seat {
+  position: absolute;
+  width: 170px;
+  min-height: 96px;
+  padding: 0.65rem 0.7rem;
+  background: rgba(8, 14, 27, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.seat.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.seat .name {
+  font-weight: 700;
+  font-size: 0.94rem;
+}
+
+.seat .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.seat .mini-cards {
+  display: flex;
+  gap: 0.28rem;
+  margin-top: 0.2rem;
+}
+
+.card-mini {
+  width: 28px;
+  height: 42px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0c1220;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.card-mini.red {
+  color: #b6183f;
+}
+
+.seat-0 { top: 80px; left: 50%; transform: translateX(-50%); }
+.seat-1 { top: 110px; right: 90px; }
+.seat-2 { top: 260px; right: 60px; }
+.seat-3 { bottom: 100px; right: 120px; }
+.seat-4 { bottom: 80px; left: 50%; transform: translateX(-50%); }
+.seat-5 { bottom: 100px; left: 120px; }
+.seat-6 { top: 260px; left: 60px; }
+.seat-7 { top: 110px; left: 90px; }
+
+.community-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, 72%);
+  padding: 0.8rem 0.95rem 1rem;
+  background: rgba(6, 11, 18, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(6px);
+}
+
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+  font-size: 0.82rem;
+  margin-bottom: 0.8rem;
+}
+
+.board-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  min-height: 92px;
+}
+
+.board-card,
+.private-card {
+  width: 64px;
+  height: 92px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #edf2ff 100%);
+  color: #0b1220;
+  border: 1px solid rgba(10, 16, 32, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.65rem;
+}
+
+.board-card.red,
+.private-card.red {
+  color: #b91d4d;
+}
+
+.board-card.back,
+.private-card.back {
+  background: linear-gradient(135deg, rgba(140, 120, 255, 0.85), rgba(41, 95, 180, 0.9));
+  color: white;
+  font-size: 1.1rem;
+}
+
+.player-cards-panel,
+.panel-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.player-cards-panel {
+  padding: 1rem;
+}
+
+.private-cards {
+  display: flex;
+  gap: 0.75rem;
+  min-height: 96px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.panel-box {
+  padding: 1rem;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.panel-title {
+  margin: 0 0 0.8rem;
+  font-weight: 700;
+  color: #dfe7ff;
+  letter-spacing: 0.02em;
+}
+
+#joinForm,
+.chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+#joinForm button,
+.chat-form button {
+  width: 100%;
+}
+
+.actions-box .action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.amount-row {
+  margin-top: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.amount-row label {
+  min-width: 54px;
+  color: var(--muted);
+}
+
+.chat-box {
+  flex: 1;
+  min-height: 320px;
+}
+
+.chat-messages {
+  min-height: 200px;
+  max-height: 240px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chat-message .meta {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.chat-message .text {
+  line-height: 1.35;
+}
+
+@media (max-width: 1080px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .table-surface {
+    min-height: 620px;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top-actions {
+    width: 100%;
+  }
+
+  .top-actions button {
+    flex: 1;
+  }
+
+  .table-surface {
+    min-height: 560px;
+  }
+
+  .seat {
+    width: 130px;
+  }
+
+  .community-box {
+    width: 82%;
+  }
+}
